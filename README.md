@@ -26,7 +26,7 @@ No part of the content may be used, copied, or distributed without explicit writ
 
 ## License
 
-See [`LICENSE.txt`](./LICENSE.txt) for the full copyright and licensing statement.
+See `LICENSE.txt' for the full copyright and licensing statement.
 
 ## Contact
 
