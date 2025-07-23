@@ -81,7 +81,7 @@ TruMate-Other-Projects-Initiatives-Systems/
 ### TruMate
 - Formal specification defining innovative document processing approach
 - Zero-hallucination guarantee through strict inference rules
-- Novel approach to bias removal and intent preservation
+- Novel approach to bias removal and intent preservation (fact checking is there to ensure plausibility, not to remove bias. No one is very concerned about bias in these projects - only whether the projected outcomes will happen.)
 - Scalable architecture for unlimited input volumes
 
 ### Autonomous Food System

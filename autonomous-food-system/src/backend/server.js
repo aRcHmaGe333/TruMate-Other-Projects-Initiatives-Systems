@@ -14,6 +14,7 @@ const recipeRoutes = require('./routes/recipes');
 const ingredientRoutes = require('./routes/ingredients');
 const cookingRoutes = require('./routes/cooking');
 const analyticsRoutes = require('./routes/analytics');
+const growingRoutes = require('./routes/growing');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -53,6 +54,7 @@ app.use('/api/recipes', recipeRoutes);
 app.use('/api/ingredients', ingredientRoutes);
 app.use('/api/cooking', cookingRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/growing', growingRoutes);
 
 // API documentation endpoint
 app.get('/api', (req, res) => {
@@ -64,7 +66,8 @@ app.get('/api', (req, res) => {
       recipes: '/api/recipes',
       ingredients: '/api/ingredients',
       cooking: '/api/cooking',
-      analytics: '/api/analytics'
+      analytics: '/api/analytics',
+      growing: '/api/growing'
     },
     documentation: '/api/docs'
   });
