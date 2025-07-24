@@ -1,10 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const GrowingModule = require('../models/GrowingModule');
+const GrowthOptimizationEngine = require('../services/GrowthOptimizationEngine');
+const HardwareIntegrationService = require('../services/HardwareIntegrationService');
 const logger = require('../utils/logger');
 
 // In-memory storage for growing modules (will be replaced with database)
 const growingModules = new Map();
+
+// Initialize services
+const optimizationEngine = new GrowthOptimizationEngine();
+const hardwareService = new HardwareIntegrationService();
 
 /**
  * Initialize sample growing modules
@@ -409,6 +415,124 @@ router.get('/dashboard', (req, res) => {
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to generate dashboard'
+    });
+  }
+});
+
+// POST /api/growing/modules/:id/optimize - Get optimization recommendations
+router.post('/modules/:id/optimize', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { cropVariety, currentConditions, performanceData } = req.body;
+    const module = growingModules.get(id);
+
+    if (!module) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: `Growing module with id ${id} not found`
+      });
+    }
+
+    const optimization = optimizationEngine.optimizeGrowingParameters(
+      id,
+      cropVariety,
+      currentConditions,
+      performanceData
+    );
+
+    logger.info(`Generated optimization for ${cropVariety} in ${module.name}`);
+    res.json(optimization);
+  } catch (error) {
+    logger.error('Error generating optimization:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to generate optimization recommendations'
+    });
+  }
+});
+
+// GET /api/growing/modules/:id/hardware - Get hardware status
+router.get('/modules/:id/hardware', (req, res) => {
+  try {
+    const { id } = req.params;
+    const module = growingModules.get(id);
+
+    if (!module) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: `Growing module with id ${id} not found`
+      });
+    }
+
+    const sensorReadings = hardwareService.getSensorReadings(id);
+    const actuatorStates = hardwareService.getActuatorStates(id);
+    const robotStatus = hardwareService.getRobotStatus(id);
+
+    res.json({
+      moduleId: id,
+      moduleName: module.name,
+      sensors: sensorReadings,
+      actuators: actuatorStates,
+      robots: robotStatus,
+      lastUpdate: new Date()
+    });
+  } catch (error) {
+    logger.error('Error retrieving hardware status:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to retrieve hardware status'
+    });
+  }
+});
+
+// POST /api/growing/modules/:id/hardware/actuators/:actuatorId - Control actuator
+router.post('/modules/:id/hardware/actuators/:actuatorId', async (req, res) => {
+  try {
+    const { id, actuatorId } = req.params;
+    const command = req.body;
+
+    const result = await hardwareService.controlActuator(id, actuatorId, command);
+
+    logger.info(`Controlled actuator ${actuatorId} in module ${id}`);
+    res.json(result);
+  } catch (error) {
+    logger.error('Error controlling actuator:', error);
+    res.status(400).json({
+      error: 'Bad Request',
+      message: error.message
+    });
+  }
+});
+
+// POST /api/growing/modules/:id/hardware/robots/:robotId/task - Assign robot task
+router.post('/modules/:id/hardware/robots/:robotId/task', async (req, res) => {
+  try {
+    const { id, robotId } = req.params;
+    const task = req.body;
+
+    const result = await hardwareService.assignRobotTask(id, robotId, task);
+
+    logger.info(`Assigned task to robot ${robotId} in module ${id}`);
+    res.json(result);
+  } catch (error) {
+    logger.error('Error assigning robot task:', error);
+    res.status(400).json({
+      error: 'Bad Request',
+      message: error.message
+    });
+  }
+});
+
+// GET /api/growing/hardware/status - Get overall hardware status
+router.get('/hardware/status', (req, res) => {
+  try {
+    const status = hardwareService.getHardwareStatus();
+    res.json(status);
+  } catch (error) {
+    logger.error('Error retrieving hardware status:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to retrieve hardware status'
     });
   }
 });
